@@ -456,7 +456,10 @@
     #legend-labels { display: flex; justify-content: space-between; color: var(--muted); }
   </style>
 
-  <script src="./tokens.js"></script>
+  <!-- Safe default so app starts even without tokens.js (GitHub Pages / no local file) -->
+  <script>window.FESTIVAL_TOKENS = { mapbox: '', cesium: '' };</script>
+  <!-- tokens.js is gitignored — overrides defaults when present locally -->
+  <script src="./tokens.js" onerror="console.warn('tokens.js not found — add your tokens for map tiles')"></script>
 
   <script type="importmap">
   {
@@ -545,8 +548,8 @@
     <div class="section-label">Data sources</div>
     <div class="dq-row"><span class="dq-dot ok"></span><span>Weather (Open-Meteo live)</span></div>
     <div class="dq-row"><span class="dq-dot" id="water-status-dot"></span><span id="water-status">Fetching island boundary…</span></div>
-    <div class="dq-row"><span class="dq-dot warn"></span><span>Buildings — mock only (OSM in live API)</span></div>
-    <div class="dq-row"><span class="dq-dot warn"></span><span>Trees — not included (manual input needed)</span></div>
+    <div class="dq-row"><span class="dq-dot" id="bld-dot"></span><span id="bld-status">Buildings — fetching…</span></div>
+    <div class="dq-row"><span class="dq-dot" id="tree-dot"></span><span id="tree-status">Trees — fetching…</span></div>
   </div>
 
   <div class="cards-section">
@@ -648,10 +651,12 @@ const FESTIVAL_POP   = 250_000;
 
 let S = {
   baseMatrix:     null,
-  originalMatrix: null,   // unfiltered — restored on boundary clear
+  originalMatrix: null,
   irResult:       null,
   allWindows:     null,
   placements:     null,
+  buildings:      [],
+  trees:          [],
   cfg:            null,
   ghiByHour: {}, maxGHI: 1, mapCtrl: null, currentHourIdx: 2,
 };
@@ -709,6 +714,41 @@ async function fetchIslandBoundary(lat, lng) {
     console.warn('[island] Overpass failed, water not excluded:', e.message);
     return null;
   }
+}
+
+// ── OSM Buildings from Overpass ───────────────────────────────────────────────
+async function fetchOSMBuildings(lat, lng, radiusM = 500) {
+  const q = `[out:json][timeout:25];(way["building"](around:${radiusM},${lat},${lng}););out geom tags;`;
+  try {
+    const r = await fetch('https://overpass-api.de/api/interpreter', { method: 'POST', body: q });
+    if (!r.ok) return [];
+    const d = await r.json();
+    return (d.elements ?? []).filter(e => e.geometry?.length > 2).map(e => {
+      const coords = e.geometry.map(n => [n.lon, n.lat]);
+      if (coords[0][0] !== coords.at(-1)[0]) coords.push(coords[0]);
+      const tags = e.tags ?? {};
+      const height = tags.height   ? parseFloat(tags.height)
+                   : tags['building:levels'] ? parseFloat(tags['building:levels']) * 3.2
+                   : 9;
+      return { polygon: coords, height: isNaN(height) ? 9 : height };
+    });
+  } catch (e) { console.warn('[buildings] Overpass failed:', e.message); return []; }
+}
+
+// ── OSM Trees from Overpass ───────────────────────────────────────────────────
+async function fetchOSMTrees(lat, lng, radiusM = 500) {
+  const q = `[out:json][timeout:25];node["natural"="tree"](around:${radiusM},${lat},${lng});out;`;
+  try {
+    const r = await fetch('https://overpass-api.de/api/interpreter', { method: 'POST', body: q });
+    if (!r.ok) return [];
+    const d = await r.json();
+    return (d.elements ?? []).map(e => ({
+      lng: e.lon, lat: e.lat,
+      radius: e.tags?.['tree:diameter_crown']
+              ? parseFloat(e.tags['tree:diameter_crown']) / 2
+              : 3.5,
+    }));
+  } catch (e) { console.warn('[trees] Overpass failed:', e.message); return []; }
 }
 
 // ── Weather forecast display ──────────────────────────────────────────────────
@@ -879,7 +919,32 @@ async function main() {
     renderWeather(hours);  // populate forecast strip immediately
 
     setStep('island');
-    const islandPoly = await fetchIslandBoundary(cfg.festival.lat, cfg.festival.lng);
+    // Fetch island outline, buildings, and trees in parallel — all from Overpass
+    const [islandPoly, buildings, trees] = await Promise.all([
+      fetchIslandBoundary(cfg.festival.lat, cfg.festival.lng),
+      fetchOSMBuildings(cfg.festival.lat, cfg.festival.lng),
+      fetchOSMTrees(cfg.festival.lat, cfg.festival.lng),
+    ]);
+    S.buildings = buildings;
+    S.trees     = trees;
+    console.log(`[OSM] ${buildings.length} buildings, ${trees.length} trees`);
+
+    const bldEl  = document.getElementById('bld-status');
+    const treeEl = document.getElementById('tree-status');
+    if (buildings.length) {
+      bldEl.textContent = `Buildings — ${buildings.length} from OSM ✓`;
+      document.getElementById('bld-dot').classList.add('ok');
+    } else {
+      bldEl.textContent = 'Buildings — OSM unavailable';
+      document.getElementById('bld-dot').classList.add('warn');
+    }
+    if (trees.length) {
+      treeEl.textContent = `Trees — ${trees.length} from OSM ✓`;
+      document.getElementById('tree-dot').classList.add('ok');
+    } else {
+      treeEl.textContent = 'Trees — OSM unavailable';
+      document.getElementById('tree-dot').classList.add('warn');
+    }
     if (islandPoly) {
       document.getElementById('water-status').textContent = 'Water excluded (OSM island boundary)';
       document.getElementById('water-status-dot').classList.add('ok');
@@ -911,7 +976,7 @@ async function main() {
     const initWindows    = S.allWindows.map(w => ({ ...w, utciMean: w.utciMean + initDelta }));
     const initPlacements = S.placements.map(p => ({ ...p, utciMean: +(p.utciMean + initDelta).toFixed(1) }));
 
-    S.mapCtrl = initMap('map', cfg, irResult, initWindows, initPlacements);
+    S.mapCtrl = initMap('map', cfg, irResult, initWindows, initPlacements, S.buildings, S.trees);
 
     document.getElementById('legend-min').textContent = irResult.minLegend?.toFixed(0) ?? '—';
     document.getElementById('legend-max').textContent = `${irResult.maxLegend?.toFixed(0) ?? '—'}°C`;

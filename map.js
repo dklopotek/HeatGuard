@@ -5,7 +5,7 @@
 // mapboxgl and MapboxDraw are loaded as UMD globals via <script src> in index.html.
 const mapboxgl = window.mapboxgl;
 import { MapboxOverlay }  from '@deck.gl/mapbox';
-import { BitmapLayer, PolygonLayer, GeoJsonLayer } from '@deck.gl/layers';
+import { BitmapLayer, PolygonLayer, GeoJsonLayer, ScatterplotLayer } from '@deck.gl/layers';
 import { MaskExtension }  from '@deck.gl/extensions';
 
 const MASK_ID = 'boundary-mask';
@@ -52,7 +52,7 @@ export function buildBitmap(matrix, width, height, minVal, maxVal) {
 }
 
 // ── Layer stack ───────────────────────────────────────────────────────────────
-function buildLayers(cfg, irResult, allWindows, placements, bitmap) {
+function buildLayers(cfg, irResult, allWindows, placements, bitmap, buildings = [], trees = []) {
   const { boundary } = cfg.festival;
   const [west, south, east, north] = irResult.bounds;
   const lo = irResult.minLegend ?? 30;
@@ -97,7 +97,38 @@ function buildLayers(cfg, irResult, allWindows, placements, bitmap) {
       updateTriggers: { getFillColor: [allWindows] },
     }),
 
-    // 4. Top-N recommended placements — amber border highlight
+    // 4. OSM buildings — extruded white boxes (SDK playground style)
+    new PolygonLayer({
+      id: 'osm-buildings',
+      data: buildings,
+      getPolygon:   b => b.polygon,
+      getElevation: b => b.height,
+      getFillColor: [232, 230, 224, 215],
+      getLineColor: [180, 178, 172, 160],
+      getLineWidth: 0.3,
+      lineWidthUnits: 'meters',
+      extruded: true,
+      filled:   true,
+      stroked:  true,
+      pickable: false,
+    }),
+
+    // 5. OSM trees — green canopy circles at ground level
+    new ScatterplotLayer({
+      id: 'osm-trees',
+      data: trees,
+      getPosition:  t => [t.lng, t.lat, 0],
+      getRadius:    t => t.radius,
+      radiusUnits:  'meters',
+      getFillColor: [48, 112, 48, 195],
+      getLineColor: [28, 70, 28, 160],
+      lineWidthMinPixels: 1,
+      stroked: true,
+      filled:  true,
+      pickable: false,
+    }),
+
+    // 6. Top-N recommended placements — amber border highlight
     new PolygonLayer({
       id: 'placement-highlights',
       data: placements,
@@ -123,7 +154,7 @@ function buildLayers(cfg, irResult, allWindows, placements, bitmap) {
 }
 
 // ── Public API ────────────────────────────────────────────────────────────────
-export function initMap(container, cfg, irResult, allWindows, placements) {
+export function initMap(container, cfg, irResult, allWindows, placements, buildings = [], trees = []) {
   const { lat, lng } = cfg.festival;
   const { matrix, width, height, minLegend, maxLegend } = irResult;
   const tokens = window.FESTIVAL_TOKENS ?? {};
@@ -143,7 +174,7 @@ export function initMap(container, cfg, irResult, allWindows, placements) {
   let _allWindows = allWindows;
   let _placements = placements;
   let _bitmap     = buildBitmap(matrix, width, height, minLegend, maxLegend);
-  let _layers     = buildLayers(cfg, irResult, _allWindows, _placements, _bitmap);
+  let _layers     = buildLayers(cfg, irResult, _allWindows, _placements, _bitmap, buildings, trees);
 
   const overlay = new MapboxOverlay({ interleaved: true, layers: _layers });
   map.addControl(overlay);
@@ -184,7 +215,7 @@ export function initMap(container, cfg, irResult, allWindows, placements) {
       _bitmap     = buildBitmap(newMatrix, width, height, minLegend, maxLegend);
       _allWindows = newAllWindows ?? _allWindows;
       _placements = newPlacements ?? _placements;
-      _layers     = buildLayers(cfg, irResult, _allWindows, _placements, _bitmap);
+      _layers     = buildLayers(cfg, irResult, _allWindows, _placements, _bitmap, buildings, trees);
       overlay.setProps({ layers: _layers });
     },
   };
