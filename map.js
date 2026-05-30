@@ -97,34 +97,36 @@ function buildLayers(cfg, irResult, allWindows, placements, bitmap, buildings = 
       updateTriggers: { getFillColor: [allWindows] },
     }),
 
-    // 4. OSM buildings — extruded white boxes (SDK playground style)
-    new PolygonLayer({
-      id: 'osm-buildings',
-      data: buildings,
-      getPolygon:   b => b.polygon,
-      getElevation: b => b.height,
-      getFillColor: [232, 230, 224, 215],
-      getLineColor: [180, 178, 172, 160],
-      getLineWidth: 0.3,
-      lineWidthUnits: 'meters',
-      extruded: true,
-      filled:   true,
-      stroked:  true,
-      pickable: false,
-    }),
-
-    // 5. OSM trees — green canopy circles at ground level
+    // 4. OSM trees — green canopy circles, NO mask — show across full city context
+    //    Recipe layer order: heatmap → trees → buildings → samplers
     new ScatterplotLayer({
       id: 'osm-trees',
       data: trees,
       getPosition:  t => [t.lng, t.lat, 0],
       getRadius:    t => t.radius,
       radiusUnits:  'meters',
-      getFillColor: [48, 112, 48, 195],
-      getLineColor: [28, 70, 28, 160],
+      getFillColor: [48, 108, 48, 190],
+      getLineColor: [28, 65, 28, 150],
       lineWidthMinPixels: 1,
       stroked: true,
       filled:  true,
+      pickable: false,
+    }),
+
+    // 5. OSM buildings — extruded white boxes, NO mask — show full city context
+    //    Matches SDK playground: buildings visible inside AND outside analysis zone
+    new PolygonLayer({
+      id: 'osm-buildings',
+      data: buildings,
+      getPolygon:   b => b.polygon,
+      getElevation: b => b.height,
+      getFillColor: [235, 232, 226, 210],
+      getLineColor: [180, 176, 168, 140],
+      getLineWidth: 0.3,
+      lineWidthUnits: 'meters',
+      extruded: true,
+      filled:   true,
+      stroked:  true,
       pickable: false,
     }),
 

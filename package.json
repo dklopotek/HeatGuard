@@ -6,8 +6,10 @@
   "scripts": {
     "mock":     "INFRARED_MOCK=1 node --env-file=.env infrared.js",
     "infrared": "node --env-file=.env infrared.js",
+    "geodata":  "python3 -W ignore fetch_geodata.py",
+    "setup":    "npm run mock && npm run geodata",
     "serve":    "npx serve@latest .",
-    "start":    "npm run mock && npm run serve"
+    "start":    "npm run setup && npm run serve"
   },
   "keywords": ["utci", "thermal-comfort", "infrared-sdk", "deck.gl", "festival", "heat-risk"],
   "author": "IAAC × Infrared Hackathon 2026",

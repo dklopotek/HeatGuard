@@ -2,8 +2,8 @@
 .env
 tokens.js
 
-# infrared_result.json is committed so GitHub Pages works out of the box.
-# Regenerate locally with: npm run mock
+# These files are committed so GitHub Pages works out of the box.
+# Regenerate locally with: npm run setup
 
 # Dependencies
 node_modules/
