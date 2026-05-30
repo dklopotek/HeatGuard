@@ -66,12 +66,30 @@ def mock_result(polygon: dict, weather: list) -> dict:
     mean_t = sum(h["dryBulbTemperature"] for h in weather) / len(weather)
     base   = mean_t + 8.0
 
+    # Bake polygon clip so the island shape shows immediately (no Overpass wait)
+    def in_polygon(lng_pt, lat_pt, coords):
+        inside = False
+        j = len(coords) - 1
+        for i, (xi, yi) in enumerate(coords):
+            xj, yj = coords[j]
+            if (yi > lat_pt) != (yj > lat_pt):
+                if lng_pt < (xj - xi) * (lat_pt - yi) / (yj - yi) + xi:
+                    inside = not inside
+            j = i
+        return inside
+
+    ring = [(p[0], p[1]) for p in ring]   # already computed above
+
     random.seed(42)
     grid_list = []
     for r in range(height):
+        lat_c = s + (r + 0.5) * (n - s) / height
         row = []
         for c in range(width):
-            # Diagonal gradient along island axis (NW→SE is hottest) + noise
+            lng_c = w + (c + 0.5) * (e - w) / width
+            if not in_polygon(lng_c, lat_c, ring):
+                row.append(None)
+                continue
             diag = (r / height + c / width) / 2
             v = base + 6 * diag + random.gauss(0, 1.8)
             row.append(round(v, 2))
