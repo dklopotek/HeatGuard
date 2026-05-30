@@ -38,41 +38,55 @@ def make_weather_point(h: dict) -> WeatherDataPoint:
 
 
 def mock_result(polygon: dict, weather: list) -> dict:
-    """Generate a synthetic UTCI grid from the polygon bounds for offline testing."""
+    """
+    Generate a synthetic UTCI grid for offline testing.
+
+    Resolution: 5 m/cell for large sites (any side > 512 m), 1 m/cell for small.
+    cell_size_m is included in the result so placement.js can compute correct
+    physical structure sizes regardless of pixel pitch.
+    """
     import math, random
+
     ring  = polygon["coordinates"][0]
     lngs  = [p[0] for p in ring]
     lats  = [p[1] for p in ring]
     w, s  = min(lngs), min(lats)
     e, n  = max(lngs), max(lats)
 
-    # 1 m cell pitch — approximate pixel counts from decimal-degree extents
     m_per_deg_lat = 111_000
     m_per_deg_lng = 111_000 * math.cos(math.radians((s + n) / 2))
-    height = max(10, round((n - s) * m_per_deg_lat))
-    width  = max(10, round((e - w) * m_per_deg_lng))
+    site_h_m = (n - s) * m_per_deg_lat
+    site_w_m = (e - w) * m_per_deg_lng
 
-    # Mean UTCI from the weather records (simple average of dryBulbTemperature + 8°C offset)
+    # Use 5 m cells for sites wider/taller than 512 m — keeps the grid manageable.
+    cell_size = 5 if max(site_h_m, site_w_m) > 512 else 1
+    height = max(10, round(site_h_m / cell_size))
+    width  = max(10, round(site_w_m / cell_size))
+
     mean_t = sum(h["dryBulbTemperature"] for h in weather) / len(weather)
-    base   = mean_t + 8.0   # outdoor thermal load above air temp
+    base   = mean_t + 8.0
 
     random.seed(42)
     grid_list = []
     for r in range(height):
         row = []
         for c in range(width):
-            # Warm gradient from N→S and W→E, plus small noise
-            v = base + 4 * (r / height) + 3 * (c / width) + random.gauss(0, 1.5)
+            # Diagonal gradient along island axis (NW→SE is hottest) + noise
+            diag = (r / height + c / width) / 2
+            v = base + 6 * diag + random.gauss(0, 1.8)
             row.append(round(v, 2))
         grid_list.append(row)
 
-    print("[runner] MOCK mode — synthetic UTCI grid generated", file=sys.stderr)
+    print(f"[runner] MOCK — {height}×{width} grid at {cell_size}m/cell "
+          f"({height*width:,} cells, ~{site_h_m:.0f}×{site_w_m:.0f} m site)",
+          file=sys.stderr)
     return {
-        "grid":       grid_list,
-        "bounds":     [w, s, e, n],
-        "min_legend": base - 2,
-        "max_legend": base + 15,
-        "grid_shape": [height, width],
+        "grid":        grid_list,
+        "bounds":      [w, s, e, n],
+        "min_legend":  base - 2,
+        "max_legend":  base + 15,
+        "grid_shape":  [height, width],
+        "cell_size_m": cell_size,
     }
 
 

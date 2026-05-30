@@ -11,7 +11,7 @@
  * Each window includes its geographic footprint for PolygonLayer rendering.
  */
 export function computeAllWindows(result, cfg) {
-  const { matrix, bounds, width, height } = result;
+  const { matrix, bounds, width, height, cellSizeM = 1 } = result;
   const { grid_size_m } = cfg.festival;
   const [west, south, east, north] = bounds;
 
@@ -59,7 +59,7 @@ export function computeAllWindows(result, cfg) {
  */
 export function computePlacements(result, cfg) {
   const { grid_size_m, top_n_placements } = cfg.festival;
-  const { sunAngles } = result;
+  const { sunAngles, cellSizeM = 1 } = result;
 
   const windows = computeAllWindows(result, cfg);
 
@@ -68,7 +68,9 @@ export function computePlacements(result, cfg) {
     ? daytime.reduce((s, a) => s + a.azimuth, 0) / daytime.length : 180;
   const shadowDir     = (avgSunAz + 180) % 360;
   const orientation_deg = +((shadowDir + 90) % 360).toFixed(1);
-  const size_m2         = grid_size_m * grid_size_m;
+  // Physical structure size in m²: grid_size_m cells × cellSizeM metres/cell per side
+  const side_m  = grid_size_m * cellSizeM;
+  const size_m2 = side_m * side_m;
 
   return windows.slice(0, top_n_placements).map((w, i) => ({
     rank:            i + 1,

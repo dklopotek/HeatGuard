@@ -78,7 +78,7 @@ export async function runInfrared(cfg, hours, sunAngles) {
 }
 
 function parseResult(raw, sunAngles) {
-  const { grid, bounds, min_legend, max_legend, grid_shape } = raw;
+  const { grid, bounds, min_legend, max_legend, grid_shape, cell_size_m } = raw;
   const [height, width] = grid_shape;
   const matrix = new Float32Array(height * width);
   for (let r = 0; r < height; r++) {
@@ -89,9 +89,9 @@ function parseResult(raw, sunAngles) {
   }
   return {
     matrix, bounds, width, height, sunAngles,
-    minLegend: min_legend,
-    maxLegend: max_legend,
-    // Keep raw grid for saving to disk in standalone mode
+    minLegend:   min_legend,
+    maxLegend:   max_legend,
+    cellSizeM:   cell_size_m ?? 1,  // metres per grid cell; 1 for standard 1m SDK output
     _raw: raw,
   };
 }
