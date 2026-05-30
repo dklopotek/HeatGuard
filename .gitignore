@@ -1,0 +1,17 @@
+# Secrets — never commit
+.env
+tokens.js
+
+# Generated — run `npm run mock` to regenerate
+infrared_result.json
+
+# Dependencies
+node_modules/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/

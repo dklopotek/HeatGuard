@@ -1,0 +1,18 @@
+{
+  "name": "heatguard",
+  "version": "1.0.0",
+  "description": "Festival heat risk and shade intervention tool — IAAC × Infrared Hackathon 2026",
+  "type": "module",
+  "scripts": {
+    "mock":     "INFRARED_MOCK=1 node --env-file=.env infrared.js",
+    "infrared": "node --env-file=.env infrared.js",
+    "serve":    "npx serve@latest .",
+    "start":    "npm run mock && npm run serve"
+  },
+  "keywords": ["utci", "thermal-comfort", "infrared-sdk", "deck.gl", "festival", "heat-risk"],
+  "author": "IAAC × Infrared Hackathon 2026",
+  "license": "MIT",
+  "dependencies": {
+    "fflate": "^0.8.3"
+  }
+}

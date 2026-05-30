@@ -1,0 +1,25 @@
+{
+  "festival": {
+    "name": "Donauinselfest",
+    "lat": 48.2462,
+    "lng": 16.3878,
+    "boundary": {
+      "type": "Polygon",
+      "coordinates": [[
+        [16.3852, 48.2444],
+        [16.3904, 48.2444],
+        [16.3904, 48.2480],
+        [16.3852, 48.2480],
+        [16.3852, 48.2444]
+      ]]
+    },
+    "dates": {
+      "start": "2026-06-26",
+      "end": "2026-06-28"
+    },
+    "event_hours": { "start": 12, "end": 23 },
+    "grid_size_m": 5,
+    "max_structure_height_m": 6,
+    "top_n_placements": 10
+  }
+}

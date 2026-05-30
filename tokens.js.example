@@ -1,0 +1,6 @@
+// tokens.js — copy this file to tokens.js and fill in real values.
+// tokens.js is gitignored. Never commit real tokens.
+window.FESTIVAL_TOKENS = {
+  mapbox: 'pk.your_mapbox_token_here',
+  cesium: 'your_cesium_ion_token_here',
+};
