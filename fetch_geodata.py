@@ -24,7 +24,7 @@ lngs = [p[0] for p in boundary]
 lats = [p[1] for p in boundary]
 BBOX = f"{min(lats)},{min(lngs)},{max(lats)},{max(lngs)}"   # Overpass: S,W,N,E
 # Buildings and trees are fetched in a wider radius so city context shows around the island
-RADIUS_M = 1200   # wider: captures city context on both river banks
+RADIUS_M = 3000   # wider: captures city context on both river banks
 CENTER   = f"{cfg['lat']},{cfg['lng']}"
 print(f"Festival: {cfg['name']}  bbox: {BBOX}  context radius: {RADIUS_M}m")
 
