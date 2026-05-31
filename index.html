@@ -735,10 +735,17 @@
 
 <!-- Legend (shown over map) -->
 <div id="legend" style="display:none">
-  <h3>UTCI (°C)</h3>
+  <h3>UTCI thermal comfort</h3>
   <div id="legend-bar"></div>
   <div id="legend-labels">
-    <span id="legend-min">—</span><span id="legend-max">—</span>
+    <span id="legend-min">—</span>
+    <span style="font-size:9px;color:var(--red)">41° stroke</span>
+    <span id="legend-max">—</span>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:3px;margin-top:7px">
+    <div style="display:flex;align-items:center;gap:5px;font-size:9px;color:var(--muted)"><span style="width:8px;height:8px;border-radius:2px;background:#216eac;display:inline-block"></span>Strong stress 32–38°C</div>
+    <div style="display:flex;align-items:center;gap:5px;font-size:9px;color:var(--muted)"><span style="width:8px;height:8px;border-radius:2px;background:#fee552;display:inline-block"></span>Very strong 38–41°C</div>
+    <div style="display:flex;align-items:center;gap:5px;font-size:9px;color:var(--red)"><span style="width:8px;height:8px;border-radius:2px;background:#d7191c;display:inline-block"></span>Stroke risk &gt;41°C</div>
   </div>
 </div>
 
@@ -1231,8 +1238,8 @@ async function runPipeline() {
     showScreen('analysis');
 
     S.mapCtrl = initMap('map', cfg, irResult, initWindows, initPlacements, S.buildings, S.trees, S.stages);
-    document.getElementById('legend-min').textContent = irResult.minLegend?.toFixed(0) ?? '—';
-    document.getElementById('legend-max').textContent = `${irResult.maxLegend?.toFixed(0) ?? '—'}°C`;
+    document.getElementById('legend-min').textContent = '32';
+    document.getElementById('legend-max').textContent = '46°C';
     document.getElementById('hour-label').textContent = `${String(HOURS[S.currentHourIdx]).padStart(2,'0')}:00`;
 
     renderPanel(initMat);

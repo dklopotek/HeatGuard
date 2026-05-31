@@ -55,8 +55,10 @@ export function buildBitmap(matrix, width, height, minVal, maxVal) {
 function buildLayers(cfg, irResult, allWindows, placements, bitmap, buildings = [], trees = [], selectedRank = null, stages = [], showStages = true) {
   const { boundary } = cfg.festival;
   const [west, south, east, north] = irResult.bounds;
-  const lo = irResult.minLegend ?? 30;
-  const hi = irResult.maxLegend ?? 52;
+  // Clamp legend to physically meaningful UTCI range so stroke threshold (41°C)
+  // maps to the yellow zone, not green. Raw mock max (50.9) wastes colour space.
+  const lo = 32;   // strong heat stress begins
+  const hi = 46;   // above this = extreme / stroke emergency
   const range = (hi - lo) || 1;
 
   return [
@@ -325,7 +327,7 @@ export function initMap(container, cfg, irResult, allWindows, placements, buildi
   let _placements   = placements;
   let _selectedRank = null;
   let _showStages   = true;
-  let _bitmap       = buildBitmap(matrix, width, height, minLegend, maxLegend);
+  let _bitmap       = buildBitmap(matrix, width, height, 32, 46);
   let _layers       = buildLayers(cfg, irResult, _allWindows, _placements, _bitmap, buildings, trees, _selectedRank, stages, _showStages);
 
   const overlay = new MapboxOverlay({ interleaved: true, layers: _layers });
