@@ -1,0 +1,58 @@
+[
+  {
+    "name": "Hauptb\u00fchne",
+    "type": "main",
+    "lat": 48.2538,
+    "lng": 16.3818,
+    "capacity": 80000,
+    "description": "Main stage \u00b7 biggest acts"
+  },
+  {
+    "name": "ORF Radio Wien",
+    "type": "stage",
+    "lat": 48.2487,
+    "lng": 16.3871,
+    "capacity": 40000,
+    "description": "Pop & schlager"
+  },
+  {
+    "name": "FM4 B\u00fchne",
+    "type": "stage",
+    "lat": 48.2438,
+    "lng": 16.3927,
+    "capacity": 30000,
+    "description": "Alternative & indie"
+  },
+  {
+    "name": "\u00d63 B\u00fchne",
+    "type": "stage",
+    "lat": 48.2385,
+    "lng": 16.3985,
+    "capacity": 35000,
+    "description": "Pop hits"
+  },
+  {
+    "name": "Salsa & Soul",
+    "type": "area",
+    "lat": 48.2462,
+    "lng": 16.3905,
+    "capacity": 12000,
+    "description": "Dance & world music"
+  },
+  {
+    "name": "Food Quarter",
+    "type": "food",
+    "lat": 48.251,
+    "lng": 16.3849,
+    "capacity": 25000,
+    "description": "Central food & bar area"
+  },
+  {
+    "name": "Children's Village",
+    "type": "area",
+    "lat": 48.2415,
+    "lng": 16.3953,
+    "capacity": 5000,
+    "description": "Family zone"
+  }
+]

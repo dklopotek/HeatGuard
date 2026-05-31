@@ -22,11 +22,23 @@
     html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--text);
       font-family: ui-sans-serif,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; }
 
-    /* ── Screen manager ─────────────────────────────────── */
-    .screen { position: fixed; inset: 0; display: none; flex-direction: column;
-      align-items: center; justify-content: center; z-index: 10; }
-    .screen.active { display: flex; }
-    #screen-analysis { display: flex; flex-direction: row; z-index: 1; }
+    /* ── Screen manager with slide transitions ──────────── */
+    .screen {
+      position: fixed; inset: 0; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; z-index: 10;
+      opacity: 0; pointer-events: none;
+      transform: translateX(40px);
+      transition: opacity .35s ease, transform .35s ease;
+    }
+    .screen.active {
+      opacity: 1; pointer-events: auto;
+      transform: translateX(0);
+    }
+    .screen.exit {
+      opacity: 0; transform: translateX(-40px);
+      pointer-events: none;
+    }
+    #screen-analysis { flex-direction: row; z-index: 1; }
     #screen-analysis.active { display: flex; }
 
     /* ═══════════════════════════════════════════════════════
@@ -67,7 +79,12 @@
       font-weight: 800; letter-spacing: -.04em; line-height: 1.0;
       color: var(--text); margin-bottom: 24px;
     }
-    .hero-title em { font-style: normal; color: var(--amber); }
+    .hero-title em {
+      font-style: normal;
+      background: linear-gradient(90deg, #fcc300 0%, #ff6b00 55%, #ff3b30 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text; display: inline;
+    }
 
     .hero-sub {
       font-size: clamp(16px, 2vw, 19px); line-height: 1.65;
@@ -209,14 +226,19 @@
     #screen-analysis { align-items: stretch; justify-content: flex-start; }
 
     #panel {
-      width: 300px; flex-shrink: 0;
+      width: 280px; flex-shrink: 0;
       background: var(--panel); border-right: 1px solid var(--border);
       display: flex; flex-direction: column; overflow: hidden;
     }
     #map { flex: 1; }
 
     .panel-header { padding: 16px 16px 12px; border-bottom: 1px solid var(--border); }
-    .panel-logo { font-size: 15px; font-weight: 800; letter-spacing: -.01em; color: var(--amber); }
+    .panel-logo {
+      font-size: 16px; font-weight: 900; letter-spacing: -.03em;
+      background: linear-gradient(90deg, #fcc300 0%, #ff6b00 60%, #ff3b30 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text; display: inline-block;
+    }
     .panel-sub  { font-size: 10px; color: var(--muted); margin-top: 3px; }
 
     .risk-section { padding: 14px 16px; border-bottom: 1px solid var(--border);
@@ -259,15 +281,26 @@
     .dq-dot.ok   { background: var(--amber); }
     .dq-dot.warn { background: #3a3020; border: 1px solid #554820; }
 
-    .cards-section { flex: 1; overflow-y: auto; padding: 12px 16px 20px; }
+    /* Right sidebar for placement cards */
+    #right-panel {
+      width: 260px; flex-shrink: 0;
+      background: var(--panel); border-left: 1px solid var(--border);
+      display: flex; flex-direction: column; overflow: hidden;
+    }
+    .right-panel-header { padding: 14px 14px 10px; border-bottom: 1px solid var(--border); }
+    .right-panel-title { font-size: 10px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); }
+
+    .cards-section { flex: 1; overflow-y: auto; padding: 10px 14px 20px; }
     .cards-section::-webkit-scrollbar { width: 3px; }
     .cards-section::-webkit-scrollbar-thumb { background: rgba(252,195,0,.2); border-radius: 2px; }
     .section-label { font-size: 9px; text-transform: uppercase; letter-spacing: .1em;
       color: #2e2c25; margin-bottom: 10px; }
 
     .pcard { background: var(--card); border: 1px solid rgba(255,255,255,.06);
-      border-radius: 10px; padding: 11px 12px; margin-bottom: 8px; transition: border-color .2s; }
-    .pcard:hover { border-color: rgba(252,195,0,.25); }
+      border-radius: 10px; padding: 11px 12px; margin-bottom: 8px;
+      transition: border-color .2s, background .2s; cursor: pointer; }
+    .pcard:hover { border-color: rgba(252,195,0,.3); background: rgba(252,195,0,.04); }
+    .pcard.selected { border-color: var(--amber); background: rgba(252,195,0,.08); }
     .pcard-header { display: flex; align-items: center; gap: 9px; margin-bottom: 8px; }
     .pcard-rank { width: 22px; height: 22px; border-radius: 50%; background: #1a1810;
       border: 1.5px solid rgba(255,255,255,.12);
@@ -287,7 +320,7 @@
     .pet-after  { color: var(--amber); font-weight: 700; }
 
     /* Map toolbar */
-    .map-toolbar { position: absolute; top: 14px; left: calc(300px + 14px);
+    .map-toolbar { position: absolute; top: 14px; left: calc(280px + 14px);
       display: flex; gap: 8px; z-index: 10; }
     .tb-btn { padding: 7px 13px; border-radius: 8px; border: 1px solid rgba(255,255,255,.12);
       background: rgba(10,10,8,.88); color: var(--text);
@@ -331,12 +364,12 @@
 </head>
 <body>
 
-<!-- ════════════════ SCREEN 1 — HERO ════════════════════════════════════════ -->
+<!-- ════════════════ SCREEN 1 — HERO ═════════════════════════════════════════ -->
 <div class="screen active" id="screen-hero">
   <div class="hero-inner">
     <div class="hero-badge">
       <span class="hero-badge-dot"></span>
-      HeatGuard · IAAC × Infrared Hackathon 2026
+      IAAC × Infrared City Hackathon 2026
     </div>
 
     <h1 class="hero-title">
@@ -344,40 +377,155 @@
     </h1>
 
     <p class="hero-sub">
-      Outdoor festivals concentrate hundreds of thousands of people in
-      open terrain during the hottest months. UTCI analysis shows us
-      exactly who is at risk — and exactly where a shade structure
-      saves the most lives.
+      HeatGuard is a real-time thermal comfort decision tool for outdoor festivals.
+      It maps who is at heat-stroke risk, where — and tells you exactly where
+      to place shade structures to save the most lives.
+    </p>
+
+    <button class="hero-cta" onclick="showScreen('scale')">
+      Why this matters
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+    </button>
+    <div class="hero-poweredby">Infrared SDK · Open-Meteo · OpenStreetMap · Mapbox</div>
+  </div>
+</div>
+
+<!-- ════════════════ SCREEN 2 — SCALE / EVIDENCE ════════════════════════════ -->
+<div class="screen" id="screen-scale">
+  <div class="hero-inner">
+    <div class="hero-badge"><span class="hero-badge-dot"></span>The evidence</div>
+    <h2 class="hero-title" style="font-size:clamp(32px,4.5vw,54px)">
+      Heat is already<br><em>killing crowds.</em>
+    </h2>
+    <p class="hero-sub" style="margin-bottom:28px">
+      Heatwaves are the deadliest extreme weather event in Europe.
+      Festivals are ground zero — open sky, no shade, peak sun, maximum crowd density.
     </p>
 
     <div class="hero-stats">
       <div class="hero-stat">
         <div class="hero-stat-num">61,000</div>
-        <div class="hero-stat-label">deaths in the 2022 European heatwave — more than floods, storms and fires combined</div>
+        <div class="hero-stat-label">excess deaths · 2022 European heatwave · more than all other weather disasters combined</div>
       </div>
       <div class="hero-stat">
         <div class="hero-stat-num">41°C</div>
-        <div class="hero-stat-label">UTCI threshold for heat stroke — triggers in under 20 min of exposure</div>
+        <div class="hero-stat-label">UTCI heat-stroke threshold · physiological limit reached in under 20 min of full sun exposure</div>
       </div>
       <div class="hero-stat">
         <div class="hero-stat-num amber">−9°C</div>
-        <div class="hero-stat-label">perceived temperature drop under a targeted shade structure</div>
+        <div class="hero-stat-label">UTCI drop a targeted shade structure delivers · moves people from danger to safe</div>
       </div>
     </div>
 
-    <button class="hero-cta" onclick="showScreen('selector')">
-      Analyse a festival
-      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
-    </button>
+    <div style="display:flex;gap:10px;margin-top:8px">
+      <button class="sel-back" onclick="showScreen('hero')" style="margin-bottom:0">← Back</button>
+      <button class="hero-cta" onclick="showScreen('science')">
+        The science behind it
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
 
-    <div class="hero-poweredby">Powered by Infrared SDK · Open-Meteo · OpenStreetMap · Mapbox</div>
+<!-- ════════════════ SCREEN 3 — SCIENCE / HOW IT WORKS ══════════════════════ -->
+<div class="screen" id="screen-science">
+  <div class="hero-inner" style="max-width:700px">
+    <div class="hero-badge"><span class="hero-badge-dot"></span>How it works</div>
+    <h2 class="hero-title" style="font-size:clamp(26px,3.2vw,42px);margin-bottom:6px">
+      Physics-based heat mapping,<br><em>cell by cell.</em>
+    </h2>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:24px;line-height:1.6">
+      Temperature alone doesn't tell you who's at risk. HeatGuard computes
+      <b style="color:var(--text)">UTCI</b> — the Universal Thermal Climate Index —
+      a WHO-referenced metric that models the human body's actual heat load.
+    </p>
+
+    <!-- Pipeline flow -->
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:28px">
+      <div style="display:grid;grid-template-columns:28px 1fr;gap:12px;align-items:start;padding:12px 14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:10px">
+        <div style="font-size:15px;margin-top:1px">①</div>
+        <div>
+          <div style="font-size:12px;font-weight:700;color:var(--amber);margin-bottom:3px">Weather — Open-Meteo API</div>
+          <div style="font-size:12px;color:var(--muted);line-height:1.5">Hourly dry-bulb temperature, relative humidity, wind speed & direction, direct + diffuse solar radiation for the exact festival dates.</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:28px 1fr;gap:12px;align-items:start;padding:12px 14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:10px">
+        <div style="font-size:15px;margin-top:1px">②</div>
+        <div>
+          <div style="font-size:12px;font-weight:700;color:var(--amber);margin-bottom:3px">Thermal comfort — Infrared SDK</div>
+          <div style="font-size:12px;color:var(--muted);line-height:1.5">Infrared's UTCI engine runs a full outdoor comfort simulation at 5 m resolution across the festival site, accounting for building shadows and solar geometry.</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:28px 1fr;gap:12px;align-items:start;padding:12px 14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:10px">
+        <div style="font-size:15px;margin-top:1px">③</div>
+        <div>
+          <div style="font-size:12px;font-weight:700;color:var(--amber);margin-bottom:3px">Surface correction — OpenStreetMap albedo</div>
+          <div style="font-size:12px;color:var(--muted);line-height:1.5">Every cell's UTCI is corrected for ground material. Asphalt (+5.5°C), concrete (+3.5°C), gravel (+2°C), metal (+6.5°C) — all scaled by real-time solar intensity.</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:28px 1fr;gap:12px;align-items:start;padding:12px 14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:10px">
+        <div style="font-size:15px;margin-top:1px">④</div>
+        <div>
+          <div style="font-size:12px;font-weight:700;color:var(--amber);margin-bottom:3px">Shade placement — sliding-window optimisation</div>
+          <div style="font-size:12px;color:var(--muted);line-height:1.5">A 25 m² window slides across 1,800+ candidate positions. Each is scored by how many cells it moves from above the 41°C stroke threshold to below it. Top 20 positions are recommended.</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px">
+      <button class="sel-back" onclick="showScreen('scale')" style="margin-bottom:0">← Back</button>
+      <button class="hero-cta" onclick="showScreen('selector')">
+        Pick a festival
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ SCREEN 4 — PRE-RUN CONFIRM (shown after festival pick) ═ -->
+<div class="screen" id="screen-method">
+  <div class="hero-inner" style="max-width:560px">
+    <div class="hero-badge"><span class="hero-badge-dot"></span>Ready to analyse</div>
+    <h2 class="hero-title" style="font-size:clamp(26px,3.2vw,40px);margin-bottom:6px">
+      Donauinselfest<br><em>2026</em>
+    </h2>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:24px;line-height:1.6">
+      Vienna · Donauinsel · 26–28 June 2026 · 250,000 visitors · 5.4 km strip
+    </p>
+
+    <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:28px">
+      <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted);padding:8px 12px;background:rgba(255,255,255,.03);border-radius:8px;border:1px solid rgba(255,255,255,.06)">
+        <span style="width:6px;height:6px;border-radius:50%;background:var(--amber);flex-shrink:0"></span>
+        Fetching hourly weather from Open-Meteo for Jun 26–28
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted);padding:8px 12px;background:rgba(255,255,255,.03);border-radius:8px;border:1px solid rgba(255,255,255,.06)">
+        <span style="width:6px;height:6px;border-radius:50%;background:var(--amber);flex-shrink:0"></span>
+        Running Infrared UTCI model at 5 m resolution across 45,000+ cells
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted);padding:8px 12px;background:rgba(255,255,255,.03);border-radius:8px;border:1px solid rgba(255,255,255,.06)">
+        <span style="width:6px;height:6px;border-radius:50%;background:var(--amber);flex-shrink:0"></span>
+        Applying surface albedo correction (asphalt, gravel, concrete, metal)
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted);padding:8px 12px;background:rgba(255,255,255,.03);border-radius:8px;border:1px solid rgba(255,255,255,.06)">
+        <span style="width:6px;height:6px;border-radius:50%;background:var(--amber);flex-shrink:0"></span>
+        Ranking 1,800+ shade placements by stroke-risk reduction
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px">
+      <button class="sel-back" onclick="showScreen('selector')" style="margin-bottom:0">← Back</button>
+      <button class="hero-cta" onclick="runAnalysis()">
+        Run analysis
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+      </button>
+    </div>
   </div>
 </div>
 
 <!-- ════════════════ SCREEN 2 — FESTIVAL SELECTOR ═══════════════════════════ -->
 <div class="screen" id="screen-selector">
   <div class="sel-inner">
-    <button class="sel-back" onclick="showScreen('hero')">
+    <button class="sel-back" onclick="showScreen('science')">
       ← Back
     </button>
     <h2 class="sel-title">Select a festival</h2>
@@ -496,17 +644,24 @@
       <div class="dq-row"><span class="dq-dot" id="bld-dot"></span><span id="bld-status">Buildings — loading…</span></div>
       <div class="dq-row"><span class="dq-dot" id="tree-dot"></span><span id="tree-status">Trees — loading…</span></div>
     </div>
-    <div class="cards-section">
-      <div class="section-label">Top shade placements</div>
-      <div id="placement-cards"></div>
-    </div>
   </div>
 
   <div id="map"></div>
 
+  <!-- Right sidebar: shade placement cards -->
+  <div id="right-panel">
+    <div class="right-panel-header">
+      <div class="right-panel-title">Top shade placements</div>
+    </div>
+    <div class="cards-section">
+      <div id="placement-cards"></div>
+    </div>
+  </div>
+
   <div class="map-toolbar">
-    <button class="tb-btn" id="btn-satellite">🛰 Satellite</button>
-    <button class="tb-btn" id="btn-draw">✏️ Draw boundary</button>
+    <button class="tb-btn" id="btn-satellite"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" style="vertical-align:-1px;margin-right:5px"><circle cx="8" cy="8" r="3.5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.2 3.2l1.4 1.4M11.4 11.4l1.4 1.4M12.8 3.2l-1.4 1.4M4.6 11.4l-1.4 1.4"/></svg>Satellite</button>
+    <button class="tb-btn active" id="btn-stages"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" style="vertical-align:-1px;margin-right:5px"><rect x="2" y="8" width="12" height="7" rx="1"/><path d="M5 8V5a3 3 0 016 0v3"/><circle cx="8" cy="11.5" r="1"/></svg>Stages</button>
+    <button class="tb-btn" id="btn-draw"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:5px"><path d="M11 2l3 3-8 8H3v-3l8-8z"/></svg>Draw boundary</button>
     <button class="tb-btn danger" id="btn-clear" style="display:none">✕ Clear</button>
   </div>
   <div id="draw-hint">Click to place vertices · Double-click to finish</div>
@@ -531,37 +686,35 @@ import { initMap }                             from './map.js';
 
 // ── Screen manager ────────────────────────────────────────────────────────────
 window.showScreen = function(name) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(`screen-${name}`).classList.add('active');
+  const next = document.getElementById(`screen-${name}`);
+  document.querySelectorAll('.screen.active').forEach(s => {
+    s.classList.add('exit');
+    setTimeout(() => s.classList.remove('active', 'exit'), 380);
+  });
+  next.classList.add('active');
   if (name === 'analysis') document.getElementById('legend').style.display = '';
 };
 
 // ── Architecture steps definition ─────────────────────────────────────────────
 const ARCH_STEPS = [
   { id: 'config',
-    icon: '🗺',
-    label: 'Mapping festival grounds',
-    detail: 'Loading boundary polygon · 4.5 km Donauinsel strip · 250 m wide' },
+    icon: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="1" width="14" height="14" rx="1"/><path d="M1 5h14M5 5v10M5 1v4"/></svg>',
+    label: 'Festival grounds', detail: '5.4 km · Donauinsel, Vienna' },
   { id: 'weather',
-    icon: '🌡',
-    label: 'Fetching live weather forecast',
-    detail: 'Open-Meteo API · June 26–28, 2026 · temperature, humidity, solar radiation' },
+    icon: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="6.5" y="1" width="3" height="8" rx="1.5"/><circle cx="8" cy="11" r="3"/></svg>',
+    label: 'Live weather', detail: 'Jun 26–28 · Open-Meteo' },
   { id: 'island',
-    icon: '🏝',
-    label: 'Tracing island outline from OSM',
-    detail: 'Overpass API · Donauinsel boundary · water cells excluded from analysis' },
+    icon: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 11 Q4 8 6 10 Q8 12 10 9 Q12 6 14 8"/><path d="M1 14h14"/></svg>',
+    label: 'Island boundary', detail: 'OSM Overpass · water masked' },
   { id: 'analysis',
-    icon: '🔬',
-    label: 'Running UTCI thermal comfort model',
-    detail: 'Infrared SDK · 56,000+ land cells · 5 m resolution · Spencer solar algorithm' },
+    icon: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="7" r="5"/><path d="M11 11l3 3"/><path d="M5 7h4M7 5v4"/></svg>',
+    label: 'UTCI model', detail: 'Infrared SDK · 5 m resolution' },
   { id: 'placement',
-    icon: '📍',
-    label: 'Ranking shade structure positions',
-    detail: '~1,800 candidate windows · sorted by heat risk reduction potential' },
+    icon: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1C5.8 1 4 2.8 4 5c0 3 4 9 4 9s4-6 4-9c0-2.2-1.8-4-4-4z"/><circle cx="8" cy="5" r="1.5"/></svg>',
+    label: 'Shade placement ranking', detail: 'Top 20 by heat risk reduction' },
   { id: 'map',
-    icon: '✅',
-    label: 'Rendering interactive map',
-    detail: '1,389 buildings · 2,558 trees · live hour slider · draw your own boundary' },
+    icon: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1,4 1,15 6,12 10,15 15,12 15,1 10,4 6,1 1,4"/><line x1="6" y1="1" x2="6" y2="12"/><line x1="10" y1="4" x2="10" y2="15"/></svg>',
+    label: 'Map ready', detail: 'Structures · trees · live slider' },
 ];
 
 // Inject step HTML
@@ -589,6 +742,11 @@ function setStep(id) {
 }
 
 window.startAnalysis = function() {
+  // Go to science screen first; user clicks "Run analysis" to start pipeline
+  showScreen('method');
+};
+
+window.runAnalysis = function() {
   showScreen('loading');
   document.getElementById('load-festival-name').textContent = 'Donauinselfest';
   document.getElementById('load-timestamp').textContent =
@@ -608,6 +766,23 @@ let S = {
   irResult: null, allWindows: null, placements: null,
   buildings: [], trees: [], cfg: null,
   ghiByHour: {}, maxGHI: 1, mapCtrl: null, currentHourIdx: 2,
+  selectedRank: null, surfaceOffsets: null, stages: [],
+};
+
+window.flyToPlacement = function(rank) {
+  if (!S.mapCtrl) return;
+  if (S.selectedRank === rank) {
+    // Second click on same card → zoom back out to full island
+    S.selectedRank = null;
+    S.mapCtrl.flyToPlacement(null);
+  } else {
+    S.selectedRank = rank;
+    const p = S.placements?.find(pl => pl.rank === rank);
+    S.mapCtrl.flyToPlacement(p ?? null);
+  }
+  // Re-render cards to update selected highlight
+  const mat = buildHourMatrix(S.baseMatrix, S.ghiByHour[HOURS[S.currentHourIdx]] ?? 0, S.maxGHI);
+  renderPanel(mat);
 };
 
 // ── Point-in-polygon (ray casting) ───────────────────────────────────────────
@@ -686,6 +861,72 @@ async function fetchOSMTrees(lat, lng) {
   return [];
 }
 
+// ── Surface albedo ────────────────────────────────────────────────────────────
+async function fetchSurfaces() {
+  try {
+    const r = await fetch('./surfaces.geojson');
+    if (r.ok) return (await r.json()).features ?? [];
+  } catch {}
+  return [];
+}
+
+function buildSurfaceOffsetMatrix(irResult, features) {
+  const { bounds, width, height } = irResult;
+  const [west, south, east, north] = bounds;
+  const degPerRow = (north - south) / height;
+  const degPerCol = (east  - west)  / width;
+  const offsets = new Float32Array(width * height); // 0 = grass baseline
+
+  for (const feat of features) {
+    const offset = feat.properties?.utci_offset ?? 0;
+    if (offset === 0) continue;
+    const geom = feat.geometry;
+
+    if (geom.type === 'Polygon') {
+      const ring = geom.coordinates[0];
+      const lngs = ring.map(c => c[0]), lats = ring.map(c => c[1]);
+      const c0 = Math.max(0, Math.floor((Math.min(...lngs) - west) / degPerCol));
+      const c1 = Math.min(width  - 1, Math.ceil((Math.max(...lngs) - west) / degPerCol));
+      const r0 = Math.max(0, Math.floor((Math.min(...lats) - south) / degPerRow));
+      const r1 = Math.min(height - 1, Math.ceil((Math.max(...lats) - south) / degPerRow));
+      for (let r = r0; r <= r1; r++) {
+        const cellLat = south + (r + 0.5) * degPerRow;
+        for (let c = c0; c <= c1; c++) {
+          if (pointInPolygon(west + (c + 0.5) * degPerCol, cellLat, { type: 'Polygon', coordinates: [ring] })) {
+            const idx = r * width + c;
+            if (offset > offsets[idx]) offsets[idx] = offset;
+          }
+        }
+      }
+    } else if (geom.type === 'LineString') {
+      // Buffer path by 3 m each side
+      const bufLat = 3 / 111000, bufLng = 3 / 74000;
+      const coords = geom.coordinates;
+      for (let i = 0; i < coords.length - 1; i++) {
+        const [x1, y1] = coords[i], [x2, y2] = coords[i + 1];
+        const c0 = Math.max(0, Math.floor((Math.min(x1,x2) - bufLng - west) / degPerCol));
+        const c1 = Math.min(width  - 1, Math.ceil((Math.max(x1,x2) + bufLng - west) / degPerCol));
+        const r0 = Math.max(0, Math.floor((Math.min(y1,y2) - bufLat - south) / degPerRow));
+        const r1 = Math.min(height - 1, Math.ceil((Math.max(y1,y2) + bufLat - south) / degPerRow));
+        for (let r = r0; r <= r1; r++)
+          for (let c = c0; c <= c1; c++) {
+            const idx = r * width + c;
+            if (offset > offsets[idx]) offsets[idx] = offset;
+          }
+      }
+    }
+  }
+  return offsets;
+}
+
+async function fetchStages() {
+  try {
+    const r = await fetch('./stages.json');
+    if (r.ok) return await r.json();
+  } catch {}
+  return [];
+}
+
 // ── Solar scaling ─────────────────────────────────────────────────────────────
 function buildGHIByHour(hours) {
   const sums = {}, counts = {};
@@ -699,9 +940,15 @@ function buildGHIByHour(hours) {
   return out;
 }
 function buildHourMatrix(base, ghi, maxGHI) {
-  const delta = (maxGHI > 0 ? ghi / maxGHI : 0) * 12 - 8;
+  const solarScale = maxGHI > 0 ? ghi / maxGHI : 0;
+  const delta = solarScale * 12 - 8;
   const out = new Float32Array(base.length);
-  for (let i = 0; i < base.length; i++) out[i] = isNaN(base[i]) ? NaN : base[i] + delta;
+  for (let i = 0; i < base.length; i++) {
+    if (isNaN(base[i])) { out[i] = NaN; continue; }
+    // Surface heat absorption scales with solar radiation (near-zero at night)
+    const surfOffset = (S.surfaceOffsets?.[i] ?? 0) * solarScale;
+    out[i] = base[i] + delta + surfOffset;
+  }
   return out;
 }
 function hourDelta(idx) {
@@ -761,7 +1008,7 @@ function renderWeather(hours) {
     return `<div class="wx-day">
       <div class="wx-date">${label}</div>
       <div class="wx-temp">${Math.max(...temps).toFixed(0)}° <span class="wx-low">/ ${Math.min(...temps).toFixed(0)}°C</span></div>
-      <div class="wx-meta">☀ ${Math.max(...ghis).toFixed(0)} W/m² · 💧 ${(rhs.reduce((s,v)=>s+v,0)/rhs.length).toFixed(0)}%</div>
+      <div class="wx-meta">&#9728; ${Math.max(...ghis).toFixed(0)} W/m² &middot; &#x1F4A7; ${(rhs.reduce((s,v)=>s+v,0)/rhs.length).toFixed(0)}%</div>
     </div>`;
   }).join('');
 }
@@ -780,7 +1027,8 @@ function renderPanel(matrix) {
     const lat = `${Math.abs(p.lat).toFixed(4)}°${p.lat >= 0 ? 'N' : 'S'}`;
     const lng = `${Math.abs(p.lng).toFixed(4)}°${p.lng >= 0 ? 'E' : 'W'}`;
     const rc  = p.rank <= 3 ? ` r${p.rank}` : '';
-    return `<div class="pcard">
+    const sel = S.selectedRank === p.rank ? ' selected' : '';
+    return `<div class="pcard${sel}" data-rank="${p.rank}" onclick="flyToPlacement(${p.rank})">
       <div class="pcard-header">
         <div class="pcard-rank${rc}">${p.rank}</div>
         <div class="pcard-loc">${lat} ${lng}</div>
@@ -790,7 +1038,7 @@ function renderPanel(matrix) {
         <span class="ps-label">Structure</span><span class="ps-value">${p.size_m2}m² · ${p.orientation_deg}°</span>
       </div>
       <div class="pcard-pet">
-        <span class="pet-label">PET</span>
+        <span class="pet-label">UTCI</span>
         <span class="pet-before">${petBefore}°C</span>
         <span class="pet-arrow">→</span>
         <span class="pet-after">${petAfter}°C</span>
@@ -830,20 +1078,23 @@ async function runPipeline() {
     renderWeather(hours);
 
     setStep('island');
-    const [islandPoly, buildings, trees] = await Promise.all([
+    const [islandPoly, buildings, trees, surfaces, stages] = await Promise.all([
       fetchIslandBoundary(cfg.festival.lat, cfg.festival.lng),
       fetchOSMBuildings(cfg.festival.lat, cfg.festival.lng),
       fetchOSMTrees(cfg.festival.lat, cfg.festival.lng),
+      fetchSurfaces(),
+      fetchStages(),
     ]);
     S.buildings = buildings;
     S.trees     = trees;
+    S.stages    = stages;
 
     if (islandPoly) {
-      document.getElementById('water-status').textContent = 'Water excluded (OSM island boundary)';
+      document.getElementById('water-status').textContent = 'Water excluded (OSM live boundary)';
       document.getElementById('water-status-dot').classList.add('ok');
     } else {
-      document.getElementById('water-status').textContent = 'Overpass offline — island boundary unavailable';
-      document.getElementById('water-status-dot').classList.add('warn');
+      document.getElementById('water-status').textContent = 'Water excluded (config boundary fallback)';
+      document.getElementById('water-status-dot').classList.add('ok');
     }
     if (buildings.length) {
       document.getElementById('bld-status').textContent = `Buildings — ${buildings.length.toLocaleString()} from OSM ✓`;
@@ -863,11 +1114,13 @@ async function runPipeline() {
     setStep('analysis');
     const irResult = await runInfrared(cfg, hours, sunAngles);
     S.irResult = irResult;
-    // Mock data already has polygon clip baked in; Overpass island clip adds further precision
-    const baseMatrix = islandPoly
-      ? clipMatrixToPolygon(irResult.matrix, irResult.width, irResult.height, irResult.bounds, islandPoly)
-      : irResult.matrix;
+    // Always clip to a polygon: live OSM boundary preferred, config boundary as fallback
+    const clipPoly = islandPoly ?? cfg.festival.boundary;
+    const baseMatrix = clipMatrixToPolygon(irResult.matrix, irResult.width, irResult.height, irResult.bounds, clipPoly);
     S.baseMatrix = baseMatrix;
+    // Build surface-albedo offset matrix (scales with solar radiation at runtime)
+    S.surfaceOffsets = buildSurfaceOffsetMatrix({ ...irResult, matrix: baseMatrix }, surfaces);
+    console.log(`[surfaces] ${surfaces.length} features → offset matrix built`);
     S.originalMatrix = baseMatrix;
 
     setStep('placement');
@@ -887,7 +1140,7 @@ async function runPipeline() {
     await new Promise(r => setTimeout(r, 500));
     showScreen('analysis');
 
-    S.mapCtrl = initMap('map', cfg, irResult, initWindows, initPlacements, S.buildings, S.trees);
+    S.mapCtrl = initMap('map', cfg, irResult, initWindows, initPlacements, S.buildings, S.trees, S.stages);
     document.getElementById('legend-min').textContent = irResult.minLegend?.toFixed(0) ?? '—';
     document.getElementById('legend-max').textContent = `${irResult.maxLegend?.toFixed(0) ?? '—'}°C`;
     document.getElementById('hour-label').textContent = `${String(HOURS[S.currentHourIdx]).padStart(2,'0')}:00`;
@@ -916,12 +1169,12 @@ async function runPipeline() {
 
     btnDraw.addEventListener('click', () => {
       draw.deleteAll(); draw.changeMode('draw_polygon');
-      btnDraw.classList.add('active'); btnDraw.textContent = '✏️ Drawing…';
+      btnDraw.classList.add('active'); btnDraw.innerHTML = '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:5px"><path d="M11 2l3 3-8 8H3v-3l8-8z"/></svg>Drawing…';
       hint.classList.add('visible'); btnClear.style.display = 'none';
     });
     btnClear.addEventListener('click', () => {
       draw.deleteAll(); btnClear.style.display = 'none';
-      btnDraw.classList.remove('active'); btnDraw.textContent = '✏️ Draw boundary';
+      btnDraw.classList.remove('active'); btnDraw.innerHTML = '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:5px"><path d="M11 2l3 3-8 8H3v-3l8-8z"/></svg>Draw boundary';
       S.baseMatrix = S.originalMatrix;
       S.cfg.festival.boundary = cfg.festival.boundary;
       S.allWindows = computeAllWindows(S.irResult, S.cfg);
@@ -932,7 +1185,7 @@ async function runPipeline() {
       const geom = e.features[0]?.geometry;
       if (!geom) return;
       hint.classList.remove('visible');
-      btnDraw.classList.remove('active'); btnDraw.textContent = '✏️ Draw boundary';
+      btnDraw.classList.remove('active'); btnDraw.innerHTML = '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:5px"><path d="M11 2l3 3-8 8H3v-3l8-8z"/></svg>Draw boundary';
       btnClear.style.display = '';
       const clipped = clipMatrixToPolygon(S.originalMatrix, S.irResult.width, S.irResult.height, S.irResult.bounds, geom);
       S.baseMatrix = clipped;
@@ -945,12 +1198,19 @@ async function runPipeline() {
     });
 
     // ── Satellite toggle ────────────────────────────────────────────────────
+    document.getElementById('btn-stages').addEventListener('click', () => {
+      const visible = S.mapCtrl.toggleStages();
+      document.getElementById('btn-stages').classList.toggle('active', visible);
+    });
+
     let isSatellite = false;
     document.getElementById('btn-satellite').addEventListener('click', () => {
       isSatellite = !isSatellite;
       S.mapCtrl.map.setStyle(isSatellite ? 'mapbox://styles/mapbox/satellite-streets-v12' : 'mapbox://styles/mapbox/dark-v11');
       document.getElementById('btn-satellite').classList.toggle('active', isSatellite);
-      document.getElementById('btn-satellite').textContent = isSatellite ? '🌑 Dark' : '🛰 Satellite';
+      document.getElementById('btn-satellite').innerHTML = isSatellite
+        ? '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" style="vertical-align:-1px;margin-right:5px"><circle cx="8" cy="8" r="6"/><path d="M8 2v2M8 12v2M2 8h2M12 8h2"/></svg>Dark'
+        : '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" style="vertical-align:-1px;margin-right:5px"><circle cx="8" cy="8" r="3.5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.2 3.2l1.4 1.4M11.4 11.4l1.4 1.4M12.8 3.2l-1.4 1.4M4.6 11.4l-1.4 1.4"/></svg>Satellite';
       S.mapCtrl.map.once('style.load', () => {
         S.mapCtrl.map.addControl(draw, 'top-right');
         update(S.currentHourIdx);
