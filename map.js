@@ -5,7 +5,7 @@
 // mapboxgl and MapboxDraw are loaded as UMD globals via <script src> in index.html.
 const mapboxgl = window.mapboxgl;
 import { MapboxOverlay }  from '@deck.gl/mapbox';
-import { BitmapLayer, PolygonLayer, GeoJsonLayer, ColumnLayer, ScatterplotLayer, TextLayer } from '@deck.gl/layers';
+import { BitmapLayer, PolygonLayer, GeoJsonLayer, ColumnLayer, ScatterplotLayer } from '@deck.gl/layers';
 import { MaskExtension }  from '@deck.gl/extensions';
 
 const MASK_ID = 'boundary-mask';
@@ -255,25 +255,7 @@ function buildLayers(cfg, irResult, allWindows, placements, bitmap, buildings = 
         filled: true,
         pickable: true,
       }),
-      new TextLayer({
-        id: 'stage-labels',
-        data: stages,
-        getPosition: s => [s.lng, s.lat],
-        getText: s => s.name,
-        getSize: 11,
-        getColor: [245, 240, 232, 230],
-        getBackgroundColor: [10, 10, 8, 180],
-        background: true,
-        getBorderColor: [60, 55, 45, 120],
-        getBorderWidth: 1,
-        backgroundPadding: [4, 2, 4, 2],
-        getTextAnchor: 'middle',
-        getAlignmentBaseline: 'center',
-        getPixelOffset: [0, -32],
-        fontFamily: 'ui-sans-serif, sans-serif',
-        fontWeight: 600,
-        pickable: false,
-      }),
+      // Labels handled via Mapbox GL layer added in initMap
     ] : []),
   ];
 }
@@ -302,9 +284,41 @@ export function initMap(container, cfg, irResult, allWindows, placements, buildi
     antialias: true,
   });
 
-  // Snap to exact festival bounds once tiles load
+  // Snap to exact festival bounds + add stage labels via native Mapbox layer
   map.once('load', () => {
     map.fitBounds(_bounds, { padding: 48, pitch: 45, bearing: -20, duration: 800 });
+
+    if (stages.length) {
+      map.addSource('stages-src', {
+        type: 'geojson',
+        data: {
+          type: 'FeatureCollection',
+          features: stages.map(s => ({
+            type: 'Feature',
+            geometry: { type: 'Point', coordinates: [s.lng, s.lat] },
+            properties: { name: s.name, type: s.type },
+          })),
+        },
+      });
+      map.addLayer({
+        id: 'stage-label-layer',
+        type: 'symbol',
+        source: 'stages-src',
+        layout: {
+          'text-field': ['get', 'name'],
+          'text-font': ['DIN Pro Medium', 'Arial Unicode MS Regular'],
+          'text-size': 11,
+          'text-offset': [0, -2.4],
+          'text-anchor': 'bottom',
+          'text-allow-overlap': false,
+        },
+        paint: {
+          'text-color': '#f5f0e8',
+          'text-halo-color': 'rgba(10,10,8,0.85)',
+          'text-halo-width': 1.5,
+        },
+      });
+    }
   });
 
   let _allWindows   = allWindows;
