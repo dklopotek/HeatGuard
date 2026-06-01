@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>HeatGuard — App Map</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: ui-sans-serif,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    background: #f8f7f4; color: #1a1a18;
+    padding: 40px 32px; max-width: 1080px; margin: 0 auto;
+  }
+  h1 { font-size: 26px; font-weight: 800; letter-spacing: -.03em; margin-bottom: 4px; }
+  .subtitle { font-size: 13px; color: #777; margin-bottom: 32px; }
+
+  /* ── Section wrapper ── */
+  .section { margin-bottom: 28px; }
+  .section-label {
+    font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+    color: #aaa; margin-bottom: 10px;
+  }
+
+  /* ── Component grid ── */
+  .comp-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+  }
+  .comp-card {
+    background: #fff; border: 1.5px solid #e5e3de;
+    border-radius: 10px; padding: 14px 14px 16px;
+  }
+  .comp-title {
+    font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+    color: #888; margin-bottom: 8px;
+  }
+  .comp-card.highlight { border-color: #fcc300; background: #fffdf0; }
+  .comp-card.highlight .comp-title { color: #b88a00; }
+  .comp-name { font-size: 15px; font-weight: 800; margin-bottom: 6px; letter-spacing: -.02em; }
+  .comp-list { font-size: 12px; color: #555; line-height: 1.7; }
+  .comp-list li { list-style: none; padding-left: 12px; position: relative; }
+  .comp-list li::before { content: '·'; position: absolute; left: 0; color: #bbb; }
+  .tag {
+    display: inline-block; font-size: 10px; font-weight: 600;
+    padding: 2px 7px; border-radius: 20px; margin-top: 4px;
+    background: #f0f0ee; color: #666;
+  }
+  .tag.live { background: #e6f4ea; color: #1a7a2e; }
+  .tag.pre  { background: #fff3e0; color: #b85c00; }
+  .tag.planned { background: #f3f0ff; color: #6b3fa0; }
+  .tag.question { background: #ffeef0; color: #c0003c; }
+
+  /* ── Diagrams row ── */
+  .diagrams {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .diagram-box {
+    background: #fff; border: 1.5px solid #e5e3de;
+    border-radius: 10px; padding: 18px 20px;
+  }
+  .diagram-title { font-size: 11px; font-weight: 700; color: #aaa; letter-spacing:.1em; text-transform:uppercase; margin-bottom: 14px; }
+
+  /* userflow */
+  .flow {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 0;
+  }
+  .flow-step {
+    background: #f4f2ee; border: 1px solid #ddd;
+    border-radius: 6px; padding: 7px 12px;
+    font-size: 11px; font-weight: 600; white-space: nowrap;
+  }
+  .flow-arrow {
+    font-size: 14px; color: #bbb; padding: 0 5px; flex-shrink: 0;
+  }
+  .flow-step.highlight { background: #fcc300; border-color: #fcc300; color: #000; }
+
+  /* arch diagram */
+  .arch {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 0;
+  }
+  .arch-node {
+    background: #f4f2ee; border: 1.5px solid #ddd; border-radius: 8px;
+    padding: 10px 14px; font-size: 11px; font-weight: 700;
+    text-align: center; line-height: 1.4; min-width: 90px;
+  }
+  .arch-node span { display: block; font-size: 10px; font-weight: 400; color: #888; margin-top: 2px; }
+  .arch-node.browser { border-color: #fcc300; background: #fffdf0; }
+  .arch-node.server  { border-color: #6b9fff; background: #f0f4ff; }
+  .arch-node.api     { border-color: #6bd16b; background: #f0fff0; }
+  .arch-node.data    { border-style: dashed; }
+  .arch-arrow { font-size: 13px; color: #bbb; padding: 0 6px; flex-shrink: 0; }
+  .arch-label { font-size: 9px; color: #aaa; text-align: center; margin-top: 2px; }
+
+  /* full flow */
+  .full-flow {
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .ff-row {
+    display: flex; align-items: center; gap: 6px; font-size: 11px;
+  }
+  .ff-actor {
+    min-width: 60px; font-weight: 700; font-size: 10px; color: #888;
+    text-transform: uppercase; letter-spacing: .06em; text-align: right;
+  }
+  .ff-line {
+    flex: 1; display: flex; align-items: center; gap: 4px;
+  }
+  .ff-box {
+    background: #f4f2ee; border: 1px solid #ddd; border-radius: 5px;
+    padding: 4px 9px; font-size: 11px; font-weight: 500; white-space: nowrap;
+  }
+  .ff-box.b { border-color: #fcc300; background: #fffdf0; }
+  .ff-box.s { border-color: #6b9fff; background: #f0f4ff; }
+  .ff-box.a { border-color: #6bd16b; background: #f0fff0; }
+  .ff-arr { color: #ccc; font-size: 12px; }
+
+  /* folder tree */
+  .tree { font-family: 'Menlo','Consolas',monospace; font-size: 12px; line-height: 1.85; color: #333; }
+  .tree .dir  { font-weight: 700; color: #111; }
+  .tree .file { color: #444; }
+  .tree .note { color: #aaa; font-size: 11px; }
+  .tree .py   { color: #2970c4; }
+  .tree .js   { color: #b8830a; }
+  .tree .json { color: #2a8a2a; }
+  .tree .env  { color: #c44040; }
+
+  .question-row {
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .q-item {
+    display: flex; align-items: flex-start; gap: 10px;
+    background: #fff; border: 1.5px solid #f2d9de; border-radius: 8px;
+    padding: 10px 14px; font-size: 12px;
+  }
+  .q-badge {
+    font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+    background: #ffeef0; color: #c0003c; border-radius: 4px; padding: 2px 7px;
+    flex-shrink: 0; margin-top: 1px;
+  }
+  .q-text { color: #444; line-height: 1.5; }
+  .q-text strong { color: #111; }
+
+  hr { border: none; border-top: 1.5px solid #e5e3de; margin: 28px 0; }
+</style>
+</head>
+<body>
+
+<h1>HeatGuard — App Map</h1>
+<p class="subtitle">IAAC × Infrared City Hackathon 2026 · festival-shade/ · last updated June 2026</p>
+
+<!-- ── 1. COMPONENTS ─────────────────────────────────────────────────────── -->
+<div class="section">
+  <div class="section-label">Every app = these parts</div>
+  <div class="comp-grid">
+
+    <div class="comp-card">
+      <div class="comp-title">User flows</div>
+      <div class="comp-name">8 screens</div>
+      <ul class="comp-list">
+        <li>Hero (problem)</li>
+        <li>Evidence (stats)</li>
+        <li>Science (pipeline)</li>
+        <li>Decision factors</li>
+        <li>Festival selector</li>
+        <li>Pre-run confirm</li>
+        <li>Loading / progress</li>
+        <li>Analysis map</li>
+      </ul>
+    </div>
+
+    <div class="comp-card highlight">
+      <div class="comp-title">Frontend (browser)</div>
+      <div class="comp-name">Vanilla JS · no bundler</div>
+      <ul class="comp-list">
+        <li>index.html — screens + UI</li>
+        <li>map.js — deck.gl layers</li>
+        <li>placement.js — ranking</li>
+        <li>infrared.js — result bridge</li>
+        <li>weather.js — Open-Meteo</li>
+        <li>sun.js — solar geometry</li>
+      </ul>
+      <span class="tag">importmap + npx serve</span>
+    </div>
+
+    <div class="comp-card">
+      <div class="comp-title">Backend (local)</div>
+      <div class="comp-name">Python scripts</div>
+      <ul class="comp-list">
+        <li>infrared_runner.py — UTCI SDK</li>
+        <li>fetch_geodata.py — OSM data</li>
+        <li>spawned by infrared.js</li>
+        <li>writes JSON to stdout</li>
+        <li>--mock flag for offline</li>
+      </ul>
+      <span class="tag pre">no web server — local only</span>
+    </div>
+
+    <div class="comp-card">
+      <div class="comp-title">Data / state</div>
+      <div class="comp-name">Files + runtime S{}</div>
+      <ul class="comp-list">
+        <li>infrared_result.json — UTCI grid</li>
+        <li>config.json — festival config</li>
+        <li>buildings / trees / surfaces .geojson</li>
+        <li>stages.json — stage coords</li>
+        <li>S{} — runtime app state</li>
+        <li>Open-Meteo — live weather</li>
+      </ul>
+      <span class="tag pre">pre-computed — re-run infrared_runner</span>
+    </div>
+
+    <div class="comp-card">
+      <div class="comp-title">APIs</div>
+      <div class="comp-name">4 external services</div>
+      <ul class="comp-list">
+        <li>Infrared SDK — UTCI model</li>
+        <li>Open-Meteo — hourly weather</li>
+        <li>Mapbox GL JS — basemap</li>
+        <li>deck.gl — viz layers</li>
+        <li>Overpass / OSM — geodata</li>
+      </ul>
+      <span class="tag live">Infrared key in .env</span>
+      <span class="tag live">Mapbox key in tokens.js</span>
+    </div>
+
+  </div>
+</div>
+
+<hr/>
+
+<!-- ── 2. DIAGRAMS ────────────────────────────────────────────────────────── -->
+<div class="section">
+  <div class="section-label">Architecture &amp; flows</div>
+  <div class="diagrams">
+
+    <!-- Architecture -->
+    <div class="diagram-box">
+      <div class="diagram-title">Architecture</div>
+      <div class="arch">
+        <div>
+          <div class="arch-node browser">Browser<span>index.html + JS modules</span></div>
+        </div>
+        <div class="arch-arrow">→</div>
+        <div>
+          <div class="arch-node server">Python runner<span>infrared_runner.py</span></div>
+          <div class="arch-label">spawned via child_process</div>
+        </div>
+        <div class="arch-arrow">→</div>
+        <div>
+          <div class="arch-node api">Infrared SDK<span>+ INFRARED_API_KEY</span></div>
+        </div>
+      </div>
+      <div style="margin-top:14px; display:flex; align-items:center; gap:8px">
+        <div class="arch-node browser" style="min-width:unset;font-size:11px;padding:7px 10px">Browser</div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-node api" style="min-width:unset;font-size:11px;padding:7px 10px">Open-Meteo</div>
+        <div class="arch-arrow">&nbsp;</div>
+        <div class="arch-node api" style="min-width:unset;font-size:11px;padding:7px 10px">Overpass / OSM</div>
+        <div class="arch-arrow">&nbsp;</div>
+        <div class="arch-node api" style="min-width:unset;font-size:11px;padding:7px 10px">Mapbox</div>
+      </div>
+      <div style="margin-top:14px; display:flex; align-items:center; gap:8px">
+        <div class="arch-node browser" style="min-width:unset;font-size:11px;padding:7px 10px">Browser</div>
+        <div class="arch-arrow">→</div>
+        <div style="font-size:11px; color:#888">reads pre-computed</div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-node data" style="min-width:unset;font-size:11px;padding:7px 10px">infrared_result.json<span>1,075 × 830 cells</span></div>
+      </div>
+    </div>
+
+    <!-- User flow -->
+    <div class="diagram-box">
+      <div class="diagram-title">User flow (8 screens)</div>
+      <div class="flow">
+        <div class="flow-step">Hero</div><div class="flow-arrow">→</div>
+        <div class="flow-step">Evidence</div><div class="flow-arrow">→</div>
+        <div class="flow-step">Science</div><div class="flow-arrow">→</div>
+        <div class="flow-step">10 factors</div>
+      </div>
+      <div class="flow" style="margin-top:8px">
+        <div class="flow-arrow" style="padding:0">↓</div>
+      </div>
+      <div class="flow" style="margin-top:4px">
+        <div class="flow-step">Festival picker</div><div class="flow-arrow">→</div>
+        <div class="flow-step">Pre-run confirm</div><div class="flow-arrow">→</div>
+        <div class="flow-step">Loading</div>
+      </div>
+      <div class="flow" style="margin-top:4px">
+        <div class="flow-arrow" style="padding:0">↓</div>
+      </div>
+      <div class="flow" style="margin-top:4px">
+        <div class="flow-step highlight">Analysis map</div>
+        <div style="font-size:11px;color:#888;margin-left:10px;line-height:1.5">
+          left panel · heatmap · right panel cards<br>
+          hour slider · shade placements
+        </div>
+      </div>
+    </div>
+
+    <!-- Full flow -->
+    <div class="diagram-box">
+      <div class="diagram-title">Full pipeline flow</div>
+      <div class="full-flow">
+        <div class="ff-row">
+          <div class="ff-actor">User</div>
+          <div class="ff-line">
+            <div class="ff-box">clicks Run analysis</div>
+            <div class="ff-arr">→</div>
+            <div class="ff-box b">showScreen('loading')</div>
+          </div>
+        </div>
+        <div class="ff-row">
+          <div class="ff-actor">Browser</div>
+          <div class="ff-line">
+            <div class="ff-box b">fetchWeather()</div>
+            <div class="ff-arr">→</div>
+            <div class="ff-box a">Open-Meteo API</div>
+          </div>
+        </div>
+        <div class="ff-row">
+          <div class="ff-actor">Browser</div>
+          <div class="ff-line">
+            <div class="ff-box b">runInfrared()</div>
+            <div class="ff-arr">→</div>
+            <div class="ff-box s">infrared_runner.py</div>
+            <div class="ff-arr">→</div>
+            <div class="ff-box a">Infrared SDK</div>
+          </div>
+        </div>
+        <div class="ff-row">
+          <div class="ff-actor">Browser</div>
+          <div class="ff-line">
+            <div class="ff-box b">fetchIslandBoundary()</div>
+            <div class="ff-arr">→</div>
+            <div class="ff-box a">Overpass API</div>
+          </div>
+        </div>
+        <div class="ff-row">
+          <div class="ff-actor">Browser</div>
+          <div class="ff-line">
+            <div class="ff-box b">buildSurfaceOffsets()</div>
+            <div class="ff-arr">→</div>
+            <div class="ff-box">surfaces.geojson</div>
+          </div>
+        </div>
+        <div class="ff-row">
+          <div class="ff-actor">Browser</div>
+          <div class="ff-line">
+            <div class="ff-box b">computeAllWindows()</div>
+            <div class="ff-arr">→</div>
+            <div class="ff-box">top 20 placements</div>
+          </div>
+        </div>
+        <div class="ff-row">
+          <div class="ff-actor">User</div>
+          <div class="ff-line">
+            <div class="ff-box highlight" style="background:#fcc300;border-color:#fcc300;font-weight:700">sees analysis map + cards</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Folder tree -->
+    <div class="diagram-box">
+      <div class="diagram-title">Folder structure (top 2 levels)</div>
+      <div class="tree">
+        <span class="dir">festival-shade/</span><br>
+        &nbsp;&nbsp;<span class="file js">index.html</span>&nbsp;&nbsp;<span class="note">— screens + app shell</span><br>
+        &nbsp;&nbsp;<span class="file js">map.js</span>&nbsp;&nbsp;<span class="note">— deck.gl layer stack</span><br>
+        &nbsp;&nbsp;<span class="file js">placement.js</span>&nbsp;&nbsp;<span class="note">— sliding-window ranking</span><br>
+        &nbsp;&nbsp;<span class="file js">infrared.js</span>&nbsp;&nbsp;<span class="note">— SDK bridge</span><br>
+        &nbsp;&nbsp;<span class="file js">weather.js</span>&nbsp;&nbsp;<span class="note">— Open-Meteo fetch</span><br>
+        &nbsp;&nbsp;<span class="file js">sun.js</span>&nbsp;&nbsp;<span class="note">— solar geometry</span><br>
+        &nbsp;&nbsp;<span class="file py">infrared_runner.py</span>&nbsp;&nbsp;<span class="note">— Python SDK</span><br>
+        &nbsp;&nbsp;<span class="file py">fetch_geodata.py</span>&nbsp;&nbsp;<span class="note">— OSM pre-fetch</span><br>
+        &nbsp;&nbsp;<span class="file json">infrared_result.json</span>&nbsp;&nbsp;<span class="note">— UTCI grid</span><br>
+        &nbsp;&nbsp;<span class="file json">config.json</span>&nbsp;&nbsp;<span class="note">— festival params</span><br>
+        &nbsp;&nbsp;<span class="file json">buildings.geojson</span>&nbsp;&nbsp;<span class="note">— 92 structures</span><br>
+        &nbsp;&nbsp;<span class="file json">trees.geojson</span>&nbsp;&nbsp;<span class="note">— 1,859 trees</span><br>
+        &nbsp;&nbsp;<span class="file json">surfaces.geojson</span>&nbsp;&nbsp;<span class="note">— 500 surface features</span><br>
+        &nbsp;&nbsp;<span class="file json">stages.json</span>&nbsp;&nbsp;<span class="note">— 7 stage coords</span><br>
+        &nbsp;&nbsp;<span class="file env">.env</span>&nbsp;&nbsp;<span class="note">— INFRARED_API_KEY</span><br>
+        &nbsp;&nbsp;<span class="file env">tokens.js</span>&nbsp;&nbsp;<span class="note">— Mapbox token (browser)</span><br>
+        &nbsp;&nbsp;<span class="file">package.json</span>&nbsp;&nbsp;<span class="note">— npm run mock / infrared</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<hr/>
+
+<!-- ── 3. OPEN QUESTIONS ──────────────────────────────────────────────────── -->
+<div class="section">
+  <div class="section-label">Open questions / things to tweak</div>
+  <div class="question-row">
+
+    <div class="q-item">
+      <span class="q-badge">?</span>
+      <div class="q-text">
+        <strong>Backend vs. frontend split:</strong> infrared_runner.py is spawned as a child process by infrared.js —
+        but infrared.js currently reads the pre-computed result file, not a live process. Is the intent to always run live,
+        or should the pre-computed JSON stay as the default fallback?
+      </div>
+    </div>
+
+    <div class="q-item">
+      <span class="q-badge">?</span>
+      <div class="q-text">
+        <strong>Adding more festivals:</strong> Glastonbury + Untold are listed as "coming soon" cards.
+        What changes: a new config.json entry, new pre-fetched GeoJSONs, and a new pre-computed UTCI grid per festival?
+        Or should the festival selector trigger a live run on click?
+      </div>
+    </div>
+
+    <div class="q-item">
+      <span class="q-badge">?</span>
+      <div class="q-text">
+        <strong>State management (S{} object):</strong> all runtime state lives in a single global S{} in index.html.
+        If adding multiple festivals or user-drawn zones, should this become a proper store (or at least per-festival slots)?
+      </div>
+    </div>
+
+    <div class="q-item">
+      <span class="q-badge">?</span>
+      <div class="q-text">
+        <strong>Planned factors #9 &amp; #10:</strong> Pedestrian flow (OSM highway graph) and shade cost optimisation
+        are marked as planned. Where do these live — new JS module, extension to placement.js, or a separate Python step?
+      </div>
+    </div>
+
+    <div class="q-item">
+      <span class="q-badge">?</span>
+      <div class="q-text">
+        <strong>tokens.js exposure:</strong> Mapbox token lives in tokens.js (browser-readable, in .gitignore).
+        Current approach works for local dev, but what's the plan when this is deployed publicly?
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>HeatGuard — Diagrams</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f0eee8;
+    padding: 40px 36px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  h1 { font-size: 18px; font-weight: 800; letter-spacing: -.02em; margin-bottom: 2px; }
+  .meta { font-size: 12px; color: #999; margin-bottom: 28px; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+  .card {
+    background: #fff;
+    border: 1.5px solid #ddd;
+    border-radius: 10px;
+    padding: 18px 20px 20px;
+  }
+  .card-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: #aaa;
+    margin-bottom: 14px;
+  }
+  svg { display: block; width: 100%; height: auto; }
+
+  /* shared SVG styles as inline */
+  .tree {
+    font-family: 'Menlo', 'Consolas', monospace;
+    font-size: 12px;
+    line-height: 1.9;
+    color: #333;
+  }
+  .dir  { font-weight: 700; color: #111; }
+  .py   { color: #1e5fa8; }
+  .js   { color: #a06000; }
+  .json { color: #1a7a1a; }
+  .env  { color: #b01010; }
+  .dim  { color: #bbb; font-size: 10.5px; }
+  .layer { font-size: 10px; color: #bbb; letter-spacing: .08em; text-transform: uppercase; margin-top: 6px; margin-bottom: 2px; }
+</style>
+</head>
+<body>
+
+<h1>HeatGuard — Diagrams</h1>
+<p class="meta">festival-shade/ · IAAC × Infrared City Hackathon 2026</p>
+
+<div class="grid">
+
+<!-- ══════════════════════════════════════════════════════
+     1. ARCHITECTURE
+══════════════════════════════════════════════════════ -->
+<div class="card">
+  <div class="card-label">architecture</div>
+  <svg viewBox="0 0 580 205" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="a1" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+        <path d="M0,0 L9,3.5 L0,7 Z" fill="#444"/>
+      </marker>
+    </defs>
+
+    <!-- Frontend (browser) -->
+    <rect x="18" y="72" width="148" height="66" rx="7"
+          fill="#dddaf7" stroke="#9590cc" stroke-width="1.5"/>
+    <text x="92" y="100" text-anchor="middle" font-family="ui-sans-serif,sans-serif"
+          font-size="13" font-weight="700" fill="#111">Frontend</text>
+    <text x="92" y="118" text-anchor="middle" font-family="ui-sans-serif,sans-serif"
+          font-size="11" fill="#666">(browser)</text>
+
+    <!-- arrow: Frontend → Python runner -->
+    <line x1="166" y1="105" x2="236" y2="105"
+          stroke="#444" stroke-width="1.5" marker-end="url(#a1)"/>
+    <text x="201" y="99" text-anchor="middle" font-family="ui-sans-serif,sans-serif"
+          font-size="10" fill="#666">request</text>
+
+    <!-- Python runner (server · holds key) -->
+    <rect x="240" y="72" width="168" height="66" rx="7"
+          fill="#dddaf7" stroke="#9590cc" stroke-width="1.5"/>
+    <text x="324" y="100" text-anchor="middle" font-family="ui-sans-serif,sans-serif"
+          font-size="13" font-weight="700" fill="#111">Python runner</text>
+    <text x="324" y="118" text-anchor="middle" font-family="ui-sans-serif,sans-serif"
+          font-size="11" fill="#666">server · holds key</text>
+
+    <!-- arrow: Python runner → Infrared SDK (diagonal up) -->
+    <line x1="408" y1="92" x2="472" y2="52"
+          stroke="#444" stroke-width="1.5" marker-end="url(#a1)"/>
+    <text x="450" y="65" text-anchor="middle" font-family="ui-sans-serif,sans-serif"
+          font-size="10" fill="#666">API key</text>
+
+    <!-- Infrared SDK -->
+    <rect x="476" y="18" width="92" height="55" rx="7"
+          fill="#dddaf7" stroke="#9590cc" stroke-width="1.5"/>
+    <text x="522" y="42" text-anchor="middle" font-family="ui-sans-serif,sans-serif"
+          font-size="12" font-weight="700" fill="#111">Infrared SDK</text>
+    <text x="522" y="58" text-anchor="middle" font-family="ui-sans-serif,sans-serif"
+          font-size="10" fill="#666">UTCI model</text>
+
+    <!-- arrow: Python runner → Data (diagonal down) -->
+    <line x1="408" y1="120" x2="472" y2="162"
+          stroke="#444" stroke-width="1.5" marker-end="url(#a1)"/>
+    <text x="440" y="155" text-anchor="middle" font-family="ui-sans-serif,sans-serif"
+          font-size="10" fill="#666">save / load</text>
+
+    <!-- Data (cylinder-style rounded rect) -->
+    <rect x="476" y="148" width="92" height="50" rx="25"
+          fill="#dddaf7" stroke="#9590cc" stroke-width="1.5"/>
+    <text x="522" y="172" text-anchor="middle" font-family="ui-sans-serif,sans-serif"
+          font-size="12" font-weight="700" fill="#111">Data</text>
+    <text x="522" y="187" text-anchor="middle" font-family="ui-sans-serif,sans-serif"
+          font-size="9" fill="#888">infrared_result.json</text>
+
+    <!-- note: browser also fetches Open-Meteo and OSM directly -->
+    <text x="92" y="165" text-anchor="middle" font-family="ui-sans-serif,sans-serif"
+          font-size="9.5" fill="#bbb">also fetches: Open-Meteo · OSM</text>
+  </svg>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════
+     2. USER FLOW
+══════════════════════════════════════════════════════ -->
+<div class="card">
+  <div class="card-label">user flow</div>
+  <svg viewBox="0 0 490 205" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="a2" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+        <path d="M0,0 L9,3.5 L0,7 Z" fill="#444"/>
+      </marker>
+    </defs>
+
+    <!-- ROW 1: Hero → Evidence → Science → 10 Factors -->
+    <!-- Hero -->
+    <rect x="10" y="15" width="72" height="38" rx="5"
+          fill="#dddaf7" stroke="#9590cc" stroke-width="1.5"/>
+    <text x="46" y="38" text-anchor="middle" font-family="ui-sans-serif,sans-serif"
+          font-size="12" font-weight="600" fill="#111">Hero</text>
+    <line x1="82" y1="34" x2="100" y2="34" stroke="#444" stroke-width="1.5" marker-end="url(#a2)"/>
+
+    <!-- Evidence -->
+    <rect x="104" y="15" width="84" height="38" rx="5"
+          fill="#dddaf7" stroke="#9590cc" stroke-width="1.5"/>
+    <text x="146" y="38" text-anchor="middle" font-family="ui-sans-serif,sans-serif"
+          font-size="12" font-weight="600" fill="#111">Evidence</text>
+    <line x1="188" y1="34" x2="206" y2="34" stroke="#444" stroke-width="1.5" marker-end="url(#a2)"/>
+
+    <!-- Science -->
+    <rect x="210" y="15" width="78" height="38" rx="5"
+          fill="#dddaf7" stroke="#9590cc" stroke-width="1.5"/>
+    <text x="249" y="38" text-anchor="middle" font-family="ui-sans-serif,sans-serif"
+          font-size="12" font-weight="600" fill="#111">Science</text>
+    <line x1="288" y1="34" x2="306" y2="34" stroke="#444" stroke-width="1.5" marker-end="url(#a2)"/>
+
+    <!-- 10 Factors -->
+    <rect x="310" y="15" width="100" height="38" rx="5"
+          fill="#dddaf7" stroke="#9590cc" stroke-width="1.5"/>
+    <text x="360" y="33" text-anchor="middle" font-family="ui-sans-serif,sans-serif"
+          font-size="12" font-weight="600" fill="#111">10 Decision</text>
+    <text x="360" y="47" text-anchor="middle" font-family="ui-sans-serif,sans-serif"
+          font-size="12" font-weight="600" fill="#111">Factors</text>
+
+    <!-- elbow: 10Factors → Festival Picker (down + back left) -->
+    <polyline points="410,34 428,34 428,64 46,64 46,80"
+              fill="none" stroke="#444" stroke-width="1.5" marker-end="url(#a2)"/>
+
+    <!-- ROW 2: Festival Picker → Confirm → Loading -->
+    <!-- Festival Picker -->
+    <rect x="10" y="84" width="100" height="38" rx="5"
+          fill="#dddaf7" stroke="#9590cc" stroke-width="1.5"/>
+    <text x="60" y="107" text-anchor="middle" font-family="ui-sans-serif,sans-serif"
+          font-size="12" font-weight="600" fill="#111">Pick festival</text>
+    <line x1="110" y1="103" x2="128" y2="103" stroke="#444" stroke-width="1.5" marker-end="url(#a2)"/>
+
+    <!-- Confirm -->
+    <rect x="132" y="84" width="88" height="38" rx="5"
+          fill="#dddaf7" stroke="#9590cc" stroke-width="1.5"/>
+    <text x="176" y="107" text-anchor="middle" font-family="ui-sans-serif,sans-serif"
+          font-size="12" font-weight="600" fill="#111">Confirm run</text>
+    <line x1="220" y1="103" x2="238" y2="103" stroke="#444" stroke-width="1.5" marker-end="url(#a2)"/>
+
+    <!-- Loading -->
+    <rect x="242" y="84" width="78" height="38" rx="5"
+          fill="#dddaf7" stroke="#9590cc" stroke-width="1.5"/>
+    <text x="281" y="107" text-anchor="middle" font-family="ui-sans-serif,sans-serif"
+          font-size="12" font-weight="600" fill="#111">Loading</text>
+
+    <!-- down arrow: Loading → Analysis Map -->
+    <line x1="281" y1="122" x2="281" y2="140" stroke="#444" stroke-width="1.5" marker-end="url(#a2)"/>
+
+    <!-- ROW 3: Analysis Map (highlighted, full width) -->
+    <rect x="10" y="144" width="460" height="52" rx="7"
+          fill="#fef3c0" stroke="#d4a017" stroke-width="1.5"/>
+    <text x="240" y="167" text-anchor="middle" font-family="ui-sans-serif,sans-serif"
+          font-size="13" font-weight="700" fill="#111">Analysis Map</text>
+    <text x="240" y="185" text-anchor="middle" font-family="ui-sans-serif,sans-serif"
+          font-size="10" fill="#888">left panel · heatmap · hour slider · shade placement cards</text>
+  </svg>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════
+     3. FULL FLOW
+══════════════════════════════════════════════════════ -->
+<div class="card">
+  <div class="card-label">full flow</div>
+  <svg viewBox="0 0 510 220" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="a3" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+        <path d="M0,0 L9,3.5 L0,7 Z" fill="#444"/>
+      </marker>
+    </defs>
+
+    <!-- User (oval) -->
+    <ellipse cx="48" cy="72" rx="40" ry="28"
+             fill="#dddaf7" stroke="#9590cc" stroke-width="1.5"/>
+    <text x="48" y="76" text-anchor="middle" font-family="ui-sans-serif,sans-serif"
+          font-size="13" font-weight="700" fill="#111">User</text>
+
+    <!-- User → Frontend: "run" (top arrow) -->
+    <line x1="88" y1="60" x2="135" y2="55" stroke="#444" stroke-width="1.5" marker-end="url(#a3)"/>
+    <text x="113" y="50" text-anchor="middle" font-family="ui-sans-serif,sans-serif"
+          font-size="10" fill="#555">run</text>
+
+    <!-- Frontend → User: "heatmap" (bottom arrow) -->
+    <line x1="135" y1="83" x2="88" y2="86" stroke="#444" stroke-width="1.5" marker-end="url(#a3)"/>
+    <text x="111" y="97" text-anchor="middle" font-family="ui-sans-serif,sans-serif"
+          font-size="10" fill="#555">heatmap</text>
+
+    <!-- Frontend box -->
+    <rect x="138" y="42" width="118" height="56" rx="7"
+          fill="#dddaf7" stroke="#9590cc" stroke-width="1.5"/>
+    <text x="197" y="66" text-anchor="middle" font-family="ui-sans-serif,sans-serif"
+          font-size="13" font-weight="700" fill="#111">Frontend</text>
+    <text x="197" y="83" text-anchor="middle" font-family="ui-sans-serif,sans-serif"
+          font-size="11" fill="#666">(browser)</text>
+
+    <!-- Frontend → Python runner: "request" -->
+    <line x1="256" y1="59" x2="304" y2="59" stroke="#444" stroke-width="1.5" marker-end="url(#a3)"/>
+    <text x="280" y="52" text-anchor="middle" font-family="ui-sans-serif,sans-serif"
+          font-size="10" fill="#555">request</text>
+
+    <!-- Python → Frontend: "result" -->
+    <line x1="304" y1="78" x2="256" y2="78" stroke="#444" stroke-width="1.5" marker-end="url(#a3)"/>
+    <text x="280" y="93" text-anchor="middle" font-family="ui-sans-serif,sans-serif"
+          font-size="10" fill="#555">result</text>
+
+    <!-- Python runner box -->
+    <rect x="308" y="42" width="140" height="56" rx="7"
+          fill="#dddaf7" stroke="#9590cc" stroke-width="1.5"/>
+    <text x="378" y="66" text-anchor="middle" font-family="ui-sans-serif,sans-serif"
+          font-size="13" font-weight="700" fill="#111">Python runner</text>
+    <text x="378" y="83" text-anchor="middle" font-family="ui-sans-serif,sans-serif"
+          font-size="11" fill="#666">holds API key</text>
+
+    <!-- Python runner → Infrared SDK (down) -->
+    <line x1="378" y1="98" x2="378" y2="120" stroke="#444" stroke-width="1.5" marker-end="url(#a3)"/>
+    <text x="420" y="113" text-anchor="middle" font-family="ui-sans-serif,sans-serif"
+          font-size="10" fill="#555">API key →</text>
+
+    <!-- Infrared SDK box (below Python runner) -->
+    <rect x="308" y="124" width="140" height="46" rx="7"
+          fill="#dddaf7" stroke="#9590cc" stroke-width="1.5"/>
+    <text x="378" y="145" text-anchor="middle" font-family="ui-sans-serif,sans-serif"
+          font-size="12" font-weight="700" fill="#111">Infrared SDK</text>
+    <text x="378" y="161" text-anchor="middle" font-family="ui-sans-serif,sans-serif"
+          font-size="10" fill="#666">UTCI model</text>
+
+    <!-- Infrared SDK → Data (right arrow) -->
+    <line x1="378" y1="170" x2="378" y2="188" stroke="#444" stroke-width="1.5" marker-end="url(#a3)"/>
+    <text x="420" y="183" text-anchor="middle" font-family="ui-sans-serif,sans-serif"
+          font-size="10" fill="#555">save / load →</text>
+
+    <!-- Data box (below Infrared SDK) -->
+    <rect x="308" y="192" width="140" height="22" rx="11"
+          fill="#dddaf7" stroke="#9590cc" stroke-width="1.5"/>
+    <text x="378" y="207" text-anchor="middle" font-family="ui-sans-serif,sans-serif"
+          font-size="11" font-weight="700" fill="#111">Data (infrared_result.json)</text>
+
+    <!-- Frontend → Open-Meteo + OSM (below, left column) -->
+    <line x1="197" y1="98" x2="197" y2="120" stroke="#444" stroke-width="1.5" marker-end="url(#a3)"/>
+    <rect x="138" y="124" width="118" height="46" rx="7"
+          fill="#dddaf7" stroke="#9590cc" stroke-width="1.5"/>
+    <text x="197" y="144" text-anchor="middle" font-family="ui-sans-serif,sans-serif"
+          font-size="11" font-weight="700" fill="#111">Open-Meteo</text>
+    <text x="197" y="160" text-anchor="middle" font-family="ui-sans-serif,sans-serif"
+          font-size="10" fill="#666">+ OSM / Overpass</text>
+  </svg>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════
+     4. FOLDER STRUCTURE
+══════════════════════════════════════════════════════ -->
+<div class="card">
+  <div class="card-label">folder structure</div>
+  <div class="tree">
+    <div class="dir">festival-shade/</div>
+    <div class="layer">── presentation layer</div>
+    <div>├── <span class="js">index.html</span> <span class="dim">6 screens · all UI · app shell</span></div>
+    <div class="layer">── application layer</div>
+    <div>├── <span class="js">map.js</span> <span class="dim">deck.gl layer stack</span></div>
+    <div>├── <span class="js">placement.js</span> <span class="dim">sliding-window ranking</span></div>
+    <div>├── <span class="js">infrared.js</span> <span class="dim">SDK bridge (spawns runner)</span></div>
+    <div>├── <span class="js">weather.js</span> <span class="dim">Open-Meteo fetch</span></div>
+    <div>├── <span class="js">sun.js</span> <span class="dim">solar geometry / orientation</span></div>
+    <div>├── <span class="py">infrared_runner.py</span> <span class="dim">Python SDK · --mock flag</span></div>
+    <div>├── <span class="py">fetch_geodata.py</span> <span class="dim">OSM pre-fetch script</span></div>
+    <div class="layer">── data layer</div>
+    <div>├── <span class="json">infrared_result.json</span> <span class="dim">1075×830 UTCI grid</span></div>
+    <div>├── <span class="json">config.json</span> <span class="dim">festival boundary + dates</span></div>
+    <div>├── <span class="json">buildings.geojson</span> <span class="dim">92 OSM structures</span></div>
+    <div>├── <span class="json">trees.geojson</span> <span class="dim">1,859 trees</span></div>
+    <div>├── <span class="json">surfaces.geojson</span> <span class="dim">500 surface features</span></div>
+    <div>├── <span class="json">stages.json</span> <span class="dim">7 stage coords</span></div>
+    <div class="layer">── secrets (not committed)</div>
+    <div>├── <span class="env">.env</span> <span class="dim">INFRARED_API_KEY</span></div>
+    <div>└── <span class="env">tokens.js</span> <span class="dim">MAPBOX_TOKEN (browser)</span></div>
+  </div>
+</div>
+
+</div><!-- /grid -->
+</body>
+</html>
